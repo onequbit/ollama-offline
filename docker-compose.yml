@@ -5,12 +5,14 @@ services:
     image: ollama/ollama
     container_name: ollama
     healthcheck:
-      # test: curl http://localhost:${OLLAMA_PORT} 2>/dev/null || exit 1
       test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 10s
+    pull_policy: always
+    tty: true
+    restart: unless-stopped
     volumes:
       - ./ollama/ollama_data:/root/.ollama
     networks:
@@ -25,18 +27,18 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
               capabilities: [gpu]
 
 
   open-webui:
-    image: ghcr.io/open-webui/open-webui:latest}
+    image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
     depends_on:
       ollama:
         condition: service_healthy
     volumes:
-      - openwebui_data:/app/backend/data
+      - ./open-webui/data:/app/backend/data
     networks:
       - localbridge
     ports:
