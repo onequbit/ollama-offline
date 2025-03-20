@@ -41,7 +41,13 @@ services:
       ollama:
         condition: service_healthy
     tty: true
-    command: sh -c "apk add --no-cache docker && docker -H unix:///var/run/docker.sock exec -it ollama sh -c 'ollama pull gemma3:1b'"
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache docker
+        docker -H unix:///var/run/docker.sock exec -it ollama sh -c 'ollama pull gemma3:1b'"
+        tail -F /dev/null
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
