@@ -46,7 +46,7 @@ services:
       - -c
       - |
         apk add --no-cache docker
-        docker -H unix:///var/run/docker.sock exec -it ollama sh -c 'ollama pull gemma3:1b'"
+        docker -H unix:///var/run/docker.sock exec -it ollama sh -c 'ollama pull gemma3:1b'
         tail -F /dev/null
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

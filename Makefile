@@ -9,8 +9,8 @@ else
 	export DATE_STR=`date`
 endif
 
-# include .env
-# export
+include .env
+export
 
 # default "all" target
 all: clean build run test cheer
