@@ -2,7 +2,7 @@
 services:
 
   ollama:
-    image: ollama/ollama
+    image: ollama/ollama:latest
     container_name: ollama
     healthcheck:
       test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
@@ -16,11 +16,12 @@ services:
       - ./ollama/ollama_data:/root/.ollama
     networks:
       - localbridge
-    ports:
-      - "${OLLAMA_PORT}:${OLLAMA_PORT}"
     env_file: .env
     environment:
       - OLLAMA_HOST=0.0.0.0
+    ports:
+      - "${OLLAMA_PORT}:${OLLAMA_PORT}"
+    
     # deploy:
     #   resources:
     #     reservations:
@@ -45,7 +46,7 @@ services:
       - -c
       - |
         apk add --no-cache docker
-        docker -H unix:///var/run/docker.sock exec -it ollama sh -c 'ollama pull gemma3:1b'
+        docker -H unix:///var/run/docker.sock exec -it ollama sh -c 'ollama pull ${STARTING_MODEL}'
         tail -F /dev/null
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -68,22 +69,22 @@ services:
       - host.docker.internal:host-gateway
     restart: unless-stopped
 
-  stable-diffusion:
-    image: universonic/stable-diffusion-webui:latest
-    container_name: sd-webui
-    ports:
-      - "7860:7860"
-    volumes:
-      - ./stable-diffusion/models:/data/models
-      - ./stable-diffusion/outputs:/data/outputs
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    restart: unless-stopped
+  # stable-diffusion:
+  #   image: universonic/stable-diffusion-webui:latest
+  #   container_name: sd-webui
+  #   ports:
+  #     - "7860:7860"
+  #   volumes:
+  #     - ./stable-diffusion/models:/data/models
+  #     - ./stable-diffusion/outputs:/data/outputs
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+  #   restart: unless-stopped
 
 volumes:
   openwebui_data: {}
