@@ -2,3 +2,4 @@ open-webui/data/*
 ollama/ollama_data/*
 .venv
 wheels/*.whl
+.env
