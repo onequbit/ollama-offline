@@ -1,26 +1,44 @@
 
 services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    # hostname: tailscale
+    container_name: tailscale
+    env_file: .env
+    environment:
+      - TS_AUTHKEY=${TAILSCALE_AUTH_KEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      # - TS_EXTRA_ARGS=--advertise-tags=tag:container
+    networks:
+      - localbridge
+    volumes:
+      - tailscale_data:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    restart: unless-stopped
 
   ollama:
     image: ollama/ollama:latest
+    # hostname: ollama
     container_name: ollama
     healthcheck:
       test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 15s
     tty: true
     restart: unless-stopped
     volumes:
       - ./ollama/ollama_data:/root/.ollama
-    networks:
-      - localbridge
+    network_mode: "service:tailscale"
     env_file: .env
     environment:
-      - OLLAMA_HOST=0.0.0.0
-    ports:
-      - "${OLLAMA_PORT}:${OLLAMA_PORT}"
+      - OLLAMA_HOST=127.0.0.1
+    # ports:
+    #   - "${OLLAMA_PORT}"
     
     # deploy:
     #   resources:
@@ -32,11 +50,11 @@ services:
 
   setup:
     image: alpine:latest
+    # hostname: setup
     container_name: setup
-    networks:
-      - localbridge
-    extra_hosts:
-      - host.docker.internal:host-gateway
+    network_mode: "service:tailscale"
+    # extra_hosts:
+    #   - host.docker.internal:host-gateway
     depends_on:
       ollama:
         condition: service_healthy
@@ -54,20 +72,22 @@ services:
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
+    # hostname: open-webui
     container_name: open-webui
     depends_on:
       ollama:
         condition: service_healthy
     volumes:
       - ./open-webui/data:/app/backend/data
-    networks:
-      - localbridge
-    ports:
-      - "${WEBUI_PORT}:${WEBUI_PORT}"
+    network_mode: "service:tailscale"
+    # ports:
+    #   - "${WEBUI_PORT}:${WEBUI_PORT}"
     env_file: .env
-    extra_hosts:
-      - host.docker.internal:host-gateway
+    # extra_hosts:
+    #   - host.docker.internal:host-gateway
     restart: unless-stopped
+  
+
 
   # stable-diffusion:
   #   image: universonic/stable-diffusion-webui:latest
@@ -87,12 +107,13 @@ services:
   #   restart: unless-stopped
 
 volumes:
+  tailscale_data:
   openwebui_data: {}
-  stable_diffusion_models: {}
-  stable_diffusion_outputs: {}
+  # stable_diffusion_models: {}
+  # stable_diffusion_outputs: {}
 
 networks:
   localbridge:
     driver: bridge
-  privatenet:
-    internal: true
+#   privatenet:
+#     internal: true
