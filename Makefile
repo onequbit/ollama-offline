@@ -15,9 +15,14 @@ export
 # default "all" target
 all: clean build run test cheer
 
-clean:
+stop:
+	docker compose stop
+
+down: stop
 	docker compose down -v
-	-rm -f open-webui/data/webui.db
+# 	-rm -f open-webui/data/webui.db
+
+clean: down
 
 build:
 	echo "..."
@@ -33,11 +38,16 @@ test:
 cheer:
 	@echo "##### Success: . . . $(DATE_STR) #####"
 
-stop:
-	docker compose stop
 
 restart:
 	docker compose restart
+
+random-hex:
+	@powershell -noprofile -command "[guid]::NewGuid().ToString('N')"
+
+# set-key:
+# 	for /f %A in ('powershell -NoProfile -Command "$r=[Security.Cryptography.RandomNumberGenerator]::Create();$b=New-Object byte[] 32;$r.GetBytes($b);[BitConverter]::ToString($b).Replace('-','').ToLower()"') do set "HEX=%A"
+# 	echo %HEX
 
 
 # Draft System Prompt:
