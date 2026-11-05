@@ -24,6 +24,9 @@ down: stop
 
 clean: down
 
+wipe-db:
+	del open-webui\data\webui.*
+
 build:
 	echo "..."
 
