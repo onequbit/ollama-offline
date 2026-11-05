@@ -38,7 +38,8 @@ services:
 
 
   setup:
-    image: alpine:latest
+    build:
+      context: ./setup
     hostname: setup
     container_name: setup
     networks:
@@ -49,21 +50,15 @@ services:
       ollama:
         condition: service_healthy
     tty: true
-    command:
-      - sh
-      - -c
-      - |
-        apk add --no-cache docker
-        docker -H unix:///var/run/docker.sock exec -it ollama sh -c 'ollama pull ${STARTING_MODEL}'
-        tail -F /dev/null
+    command: tail -F /dev/null
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
 
-  open-webui:
+  bruce-ai:
     image: ghcr.io/open-webui/open-webui:main
-    hostname: open-webui
-    container_name: open-webui
+    hostname: bruce-ai
+    container_name: bruce-ai
     depends_on:
       ollama:
         condition: service_started
